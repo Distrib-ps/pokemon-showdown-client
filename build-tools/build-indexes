@@ -125,6 +125,7 @@ function requireNoCache(pathSpec) {
 	}
 	for (const id in Dex.data.Pokedex) {
 		const name = Dex.data.Pokedex[id].name;
+		if (Dex.data.Pokedex[id].isCosmeticForme) continue;
 		generateAlias(id, name, 'pokemon');
 	}
 	for (const id in Dex.data.Moves) {
@@ -222,7 +223,10 @@ function requireNoCache(pathSpec) {
 
 	for (const type in Dex.data.TypeChart) {
 		BattleSearchCountIndex[type + ' pokemon'] = Object.keys(Dex.data.Pokedex)
-			.filter(id => (Dex.data.Pokedex[id].types.indexOf(type) >= 0)).length;
+			.filter(id => (
+				!Dex.data.Pokedex[id].isCosmeticForme &&
+				Dex.data.Pokedex[id].types.indexOf(type) >= 0
+			)).length;
 	}
 
 	let buf = '// DO NOT EDIT - automatically built with build-tools/build-indexes\n\n';
@@ -302,6 +306,7 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 		const monotypeBans = {};
 		const nonstandardMoves = [];
 		const gen5zuBans = {};
+		const gen4puBans = {};
 		for (const id of pokemon) {
 			const species = Dex.mod(gen).species.get(id);
 			const baseSpecies = Dex.mod(gen).species.get(species.baseSpecies);
@@ -409,9 +414,9 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 			if (species.forme) {
 				if (
 					[
-						'Aegislash', 'Castform', 'Cherrim', 'Cramorant', 'Eiscue', 'Meloetta', 'Mimikyu', 'Minior', 'Morpeko', 'Wishiwashi',
+						'Aegislash', 'Castform', 'Cherrim', 'Cramorant', 'Eiscue', 'Meloetta', 'Mimikyu', 'Minior', 'Morpeko', 'Ramnarok', 'Wishiwashi',
 					].includes(species.baseSpecies) || species.forme.includes('Totem') || species.forme.includes('Zen') ||
-					(species.baseSpecies === 'Ogerpon' && species.forme.includes('Tera'))
+					(species.baseSpecies === 'Ogerpon' && species.forme.includes('Tera')) || species.isCosmeticForme
 				) {
 					continue;
 				}
@@ -446,6 +451,12 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 				const mono = Dex.formats.get(gen + (isNatDex ? 'nationaldex' : '') + 'monotype');
 				if (mono.exists && Dex.formats.getRuleTable(mono).isBannedSpecies(species)) {
 					monotypeBans[species.id] = 1;
+				}
+			}
+			if (genNum === 4) {
+				const gen4pu = Dex.formats.get(gen + 'pu');
+				if (gen4pu.exists && Dex.formats.getRuleTable(gen4pu).isBannedSpecies(species)) {
+					gen4puBans[species.id] = 1;
 				}
 			}
 		}
@@ -540,6 +551,9 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 			if (genNum === 5) {
 				BattleTeambuilderTable[gen].gen5zuBans = gen5zuBans;
 			}
+			if (genNum === 4) {
+				BattleTeambuilderTable[gen].gen4puBans = gen4puBans;
+			}
 			BattleTeambuilderTable[gen].overrideTier = overrideTier;
 			BattleTeambuilderTable[gen].tiers = tiers;
 			BattleTeambuilderTable[gen].items = items;
@@ -622,7 +636,7 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 				if (isNatDex) {
 					let curItem = item;
 					let curGen = genNum;
-					while (item.isNonstandard && curGen >= 7) {
+					while (curItem.isNonstandard && curGen >= 7) {
 						curItem = Dex.forGen(curGen).items.get(item.id);
 						curGen--;
 					}
@@ -730,6 +744,7 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 			case 'souldew':
 			// falls through
 			// Other
+			case 'leek':
 			case 'stick':
 			case 'thickclub':
 			case 'lightball':
@@ -840,8 +855,6 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 				} else if (item.name.endsWith(" Gem") && item.name !== "Normal Gem") {
 					if (genNum >= 6) {
 						unreleasedItems.push(id);
-					} else if (item.name === "Flying Gem") {
-						greatItems.push(id);
 					} else {
 						goodItems.push(id);
 					}
@@ -1116,7 +1129,7 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 		}
 	}
 
-	// Client relevant data that should be overriden by past gens and mods
+	// Client relevant data that should be overridden by past gens and mods
 	const overrideSpeciesKeys = [
 		'abilities', 'baseStats', 'cosmeticFormes', 'isNonstandard', 'requiredItems', 'types', 'unreleasedHidden',
 	];
@@ -1142,6 +1155,7 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 		BattleTeambuilderTable[gen].overrideSpeciesData = overrideSpeciesData;
 		for (const id in genData.Pokedex) {
 			const curEntry = genDex.species.get(id);
+			if (curEntry.isCosmeticForme) continue;
 			const nextEntry = nextGenDex.species.get(id);
 			for (const key of overrideSpeciesKeys) {
 				if (JSON.stringify(curEntry[key]) !== JSON.stringify(nextEntry[key])) {

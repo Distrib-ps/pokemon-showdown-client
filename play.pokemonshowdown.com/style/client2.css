@@ -566,6 +566,9 @@ summary:hover .expandbutton,
 	border-left: 1px solid #AAAAAA;
 	margin-left: -1px;
 }
+.dark .ps-room {
+	border-color: #34373b;
+}
 .scrollable {
 	overflow: auto;
 	-webkit-overflow-scrolling: touch;
@@ -839,11 +842,14 @@ p.or:after {
 }
 .mini-window .mini-window-contents {
 	position: relative;
-	height: 300px;
+	height: 500px;
 	border: 1px solid #AAAAAA;
 	border-top: 0;
 	border-bottom-left-radius: 5px;
 	border-bottom-right-radius: 5px;
+}
+.mini-window .mini-window-contents.mini-window-flex {
+	height: auto;
 }
 .mini-window-body {
 	min-height: 100px;
@@ -1027,35 +1033,6 @@ form.menugroup {
 .button.mainmenu6:active { background: linear-gradient(to bottom,  hsl(270,40%,42%),  hsl(300,40%,58%)); }
 
 /*********************************************************
- * Ladder
- *********************************************************/
-
-.table-header {
-	position: relative;
-	position: sticky;
-	top: 0;
-}
-.ladder table, .ladder td, .ladder th,
-.table, .table td, .table th {
-	border-collapse: collapse;
-	border: 1px solid #BBBBBB;
-}
-.ladder td, .ladder th,
-.table td, .table th {
-	padding: 3px 5px;
-}
-.ladder th, .table th {
-	text-align: left;
-	font-size: 9pt;
-	background: #EEEEEE;
-	color: #111111;
-}
-
-.hidden {
-	display: none;
-}
-
-/*********************************************************
  * Room list
  *********************************************************/
 
@@ -1084,7 +1061,7 @@ form.menugroup {
 	font-size: 18pt;
 	font-weight: normal;
 }
-.roomcounters .usercount {
+/* .roomcounters .usercount {
 	display: block;
 	width: 49px;
 	height: 63px;
@@ -1107,6 +1084,30 @@ form.menugroup {
 }
 .roomcounters .button:hover .battlecount {
 	background: url(https://play.pokemonshowdown.com/sprites/gen5ani/meloetta-pirouette.gif) center no-repeat;
+} */
+.roomcounters .usercount {
+	display: block;
+	width: 96px;
+	height: 96px;
+	position: absolute;
+	left: -60px;
+	bottom: -20px;
+	background: url(https://play.pokemonshowdown.com/sprites/gen5/malamar.png) center no-repeat;
+}
+.roomcounters button:hover .usercount {
+	background: url(https://play.pokemonshowdown.com/sprites/gen5ani/malamar.gif) center no-repeat;
+}
+.roomcounters .battlecount {
+	display: block;
+	width: 96px;
+	height: 96px;
+	position: absolute;
+	right: -63px;
+	bottom: -20px;
+	background: url(https://play.pokemonshowdown.com/sprites/gen5/malamar.png) center no-repeat;
+}
+.roomcounters button:hover .battlecount {
+	background: url(https://play.pokemonshowdown.com/sprites/gen5ani/malamar.gif) center no-repeat;
 }
 
 .roomlist {
@@ -1161,6 +1162,13 @@ form.menugroup {
 	min-height: 36px;
 	padding: 3px 4px 0 4px;
 	border-top: 1px solid #AAAAAA;
+}
+.mini-window-flex .chat-log, .mini-window-flex .chat-log-add {
+	position: static;
+}
+.mini-window-flex .chat-log {
+	min-height: 80px;
+	max-height: 300px;
 }
 .debug {
 	display: none;
@@ -1477,14 +1485,13 @@ pre.textbox.textbox-empty[placeholder]:before {
 	bottom: 0;
 	width: 145px;
 	height: auto;
-	border-right: 1px solid #AAAAAA;
 
 	overflow: auto;
 	-webkit-overflow-scrolling: touch;
 }
 .userlist-hidden {
 	width: auto;
-	border-right: 0; 
+	border-right: 0;
 	bottom: auto;
 	overflow: visible;
 }
@@ -1503,6 +1510,9 @@ pre.textbox.textbox-empty[placeholder]:before {
 .chat-log-add.hasuserlist,
 .tournament-wrapper.hasuserlist {
 	left: 146px;
+}
+.chat-log.hasuserlist {
+	border-left: 1px solid #AAAAAA;
 }
 .userlist ul,
 .userlist li {
@@ -2440,4 +2450,19 @@ pre.textbox.textbox-empty[placeholder]:before {
 }
 .dark .chat.mine {
 	background: rgba(255,255,255,0.05);
+}
+
+.notification-badge {
+	position: absolute;
+	top: 2px;
+	left: 13px;
+	width: 15px;
+	height: 15px;
+	background: #e9790d;
+	color: white;
+	font-size: 9px;
+	font-weight: bold;
+	line-height: 14px;
+	text-align: center;
+	border-radius: 50%;
 }
