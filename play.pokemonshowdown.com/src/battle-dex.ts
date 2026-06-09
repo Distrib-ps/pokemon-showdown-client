@@ -43,6 +43,7 @@ export declare namespace Dex {
 	export type StatNameExceptHP = DexData.StatNameExceptHP;
 	export type BoostStatName = DexData.BoostStatName;
 	export type TypeName = DexData.TypeName;
+	export type CategoryName = DexData.CategoryName;
 	export type StatusName = DexData.StatusName;
 	export type GenderName = DexData.GenderName;
 	export type NatureName = DexData.NatureName;
@@ -279,6 +280,9 @@ export const Dex = new class implements ModdedDex {
 		}
 		if (dex.gen === 8 && formatid.includes('bdsp')) {
 			dex = Dex.mod('gen8bdsp' as ID);
+		}
+		if (dex.gen === 9 && formatid.includes('champions')) {
+			dex = Dex.mod('champions' as ID);
 		}
 		return dex;
 	}
@@ -645,37 +649,19 @@ export const Dex = new class implements ModdedDex {
 			let baseSpeciesid = toID(species.baseSpecies);
 			spriteData.cryurl = 'audio/cries/' + baseSpeciesid;
 			let formeid = species.formeid;
-			if (species.isMega || formeid && (
-				formeid === '-crowned' ||
-				formeid === '-eternal' ||
-				formeid === '-eternamax' ||
-				formeid === '-four' ||
-				formeid === '-hangry' ||
-				formeid === '-hero' ||
-				formeid === '-lowkey' ||
-				formeid === '-noice' ||
-				formeid === '-primal' ||
-				formeid === '-rapidstrike' ||
-				formeid === '-roaming' ||
-				formeid === '-school' ||
-				formeid === '-sky' ||
-				formeid === '-starter' ||
-				formeid === '-super' ||
-				formeid === '-therian' ||
-				formeid === '-unbound' ||
-				baseSpeciesid === 'calyrex' ||
-				baseSpeciesid === 'kyurem' ||
-				baseSpeciesid === 'cramorant' ||
-				baseSpeciesid === 'indeedee' ||
-				baseSpeciesid === 'lycanroc' ||
-				baseSpeciesid === 'necrozma' ||
-				baseSpeciesid === 'oinkologne' ||
-				baseSpeciesid === 'oricorio' ||
-				baseSpeciesid === 'slowpoke' ||
-				baseSpeciesid === 'tatsugiri' ||
-				baseSpeciesid === 'zygarde'
-			)) {
-				spriteData.cryurl += formeid;
+			const specialFormeCries = [
+				'-bloodmoon', '-crowned', '-eternal', '-eternamax', '-four', '-hangry', '-hero', '-lowkey', '-noice', '-primal', '-rapidstrike', '-roaming', '-school', '-sky', '-starter', '-super', '-therian', '-unbound',
+			];
+			const specialBaseSpeciesCries = [
+				'calyrex', 'kyurem', 'cramorant', 'indeedee', 'lycanroc', 'necrozma', 'oinkologne', 'oricorio', 'slowpoke', 'tatsugiri', 'zygarde',
+			];
+			if (species.isMega ||
+				formeid && (specialFormeCries.includes(formeid) || specialBaseSpeciesCries.includes(baseSpeciesid))) {
+				if (species.isMega && (baseSpeciesid === 'meowstic' || baseSpeciesid === 'tatsugiri')) {
+					spriteData.cryurl += '-mega';
+				} else {
+					spriteData.cryurl += formeid;
+				}
 			}
 			spriteData.cryurl += '.mp3';
 		}
@@ -827,7 +813,7 @@ export const Dex = new class implements ModdedDex {
 		let left = (num % 12) * 40;
 		let fainted = ((pokemon as Pokemon | ServerPokemon)?.fainted ?
 			`;opacity:.3;filter:grayscale(100%) brightness(.5)` : ``);
-		return `background:transparent url(${Dex.resourcePrefix}sprites/pokemonicons-sheet.png?v19) no-repeat scroll -${left}px -${top}px${fainted}`;
+		return `background:transparent url(${Dex.resourcePrefix}sprites/pokemonicons-sheet.png?v22) no-repeat scroll -${left}px -${top}px${fainted}`;
 	}
 
 	getTeambuilderSpriteData(pokemon: any, dex: ModdedDex = Dex): TeambuilderSpriteData {
@@ -863,10 +849,11 @@ export const Dex = new class implements ModdedDex {
 		if (dex.modid === 'gen7letsgo') gen = 8;
 		if (Dex.prefs('nopastgens')) gen = 9;
 		if (Dex.prefs('bwgfx') && gen > 5) gen = 5;
+		// TODO: refactor after we get home sprites for Z-A Megas and Eternal Floette
 		let homeExists = (!species.isNonstandard || !['CAP', 'Custom'].includes(species.isNonstandard) ||
 			species.id === "xerneasneutral") && ![
 			"floetteeternal", "pichuspikyeared", "pikachubelle", "pikachucosplay", "pikachulibre", "pikachuphd", "pikachupopstar", "pikachurockstar",
-		].includes(species.id);
+		].includes(species.id) && !(species.isMega && species.gen === 9);
 		if (gen >= 8 && homeExists) {
 			spriteData.spriteDir = 'sprites/home-centered';
 			spriteData.x = 8;
@@ -970,8 +957,9 @@ export class ModdedDex {
 	pokeballs: string[] | null = null;
 	constructor(modid: ID) {
 		this.modid = modid;
-		const gen = parseInt(modid.charAt(3), 10);
-		if (!modid.startsWith('gen') || !gen) throw new Error("Unsupported modid");
+		let gen = parseInt(modid.charAt(3), 10);
+		if (this.modid === 'champions') gen = 9;
+		if ((modid !== 'champions' && !modid.startsWith('gen')) || !gen) throw new Error("Unsupported modid");
 		this.gen = gen;
 	}
 	moves = {

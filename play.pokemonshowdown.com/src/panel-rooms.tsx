@@ -8,12 +8,15 @@
 import { PS, PSRoom, type RoomID, type RoomOptions } from "./client-main";
 import { PSPanelWrapper, PSRoomPanel } from "./panels";
 import type { RoomInfo } from "./panel-mainmenu";
-import { toID } from "./battle-dex";
+import { Dex, toID } from "./battle-dex";
 
 export class RoomsRoom extends PSRoom {
 	override readonly classType: string = 'rooms';
 	constructor(options: RoomOptions) {
 		super(options);
+		if (Object.keys(PS.prefs.serversettings).length) {
+			PS.send(`/updatesettings ${JSON.stringify(PS.prefs.serversettings)}`);
+		}
 		PS.send(`/cmd rooms`);
 	}
 }
@@ -188,31 +191,29 @@ class RoomsPanel extends PSRoomPanel {
 		return [...hidden, ["Search results", results]];
 	}
 	override render() {
-		if (this.hidden && PS.isVisible(this.props.room)) this.hidden = false;
+		if (this.hidden && PS.isVisiblePanel(this.props.room)) this.hidden = false;
 		if (this.hidden) {
-			return <PSPanelWrapper room={this.props.room} scrollable>{null}</PSPanelWrapper>;
+			return <PSPanelWrapper room={this.props.room}>{null}</PSPanelWrapper>;
 		}
 		const rooms = PS.mainmenu.roomsCache;
 		this.updateRoomList();
 
-		return <PSPanelWrapper room={this.props.room} scrollable><div class="pad">
+		return <PSPanelWrapper room={this.props.room}><div class="pad">
 			<button class="button" style="float:right;font-size:10pt;margin-top:3px" onClick={this.hide}>
 				<i class="fa fa-caret-right" aria-hidden></i> Hide
 			</button>
 			<div class="roomcounters">
 				<a class="button" href="users" title="Find an online user">
 					<span
-						class="pixelated usercount"
-						// title="Meloetta is PS's mascot! The Aria forme is about using its voice, and represents our chatrooms."
-						title="Malamar is PS's mascot! Its Ability, Contrary, represents our chatrooms."
+						class={`pixelated usercount${Dex.afdMode === true ? ' afd' : ''}`}
+						title="Meloetta is PS's mascot! The Aria forme is about using its voice, and represents our chatrooms."
 					></span>
 					<strong>{rooms.userCount || '-'}</strong> users online
 				</a> {}
 				<a class="button" href="battles" title="Watch an active battle">
 					<span
-						class="pixelated battlecount"
-						// title="Meloetta is PS's mascot! The Pirouette forme is Fighting-type, and represents our battles."
-						title="Malamar is PS's mascot! Its favorite move, Superpower, is Fighting-type, and represents our battles."
+						class={`pixelated battlecount${Dex.afdMode ? ' afd' : ''}`}
+						title="Meloetta is PS's mascot! The Pirouette forme is Fighting-type, and represents our battles."
 					></span>
 					<strong>{rooms.battleCount || '-'}</strong> active battles
 				</a>
